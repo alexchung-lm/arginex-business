@@ -2,4 +2,4 @@ flask
 line-bot-sdk>=3.0
 Pillow
 gunicorn
-google-generativeai
+google-genai
