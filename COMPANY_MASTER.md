@@ -489,7 +489,7 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 
 ## ㊉ 待辦清單
 
-### 系統 2（IOT）待辦
+### 系統 2（IOT）— 現有待辦
 - [ ] /dashboard 加密碼保護（品牌官網 / 維持公開）
 - [ ] 官網加 IG/FB 社群連結
 - [ ] 提交 Google Search Console
@@ -501,10 +501,29 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 - [ ] Raspberry Pi 硬體採購與設定
 - [ ] ⚠️ 評估是否升級 Render 付費版（57 Agent + 17 排程，Free Tier 有風險）
 
-### 系統 1（業務）待辦
-- [ ] 拆分現有 3 個 Agent 為完整 8+ 模組
+### 系統 2（IOT）— 複式簿記 + 會計自動化（v5.5 新增，~20hr）
+- [ ] chart_of_accounts 工作表 + input_chart.py（會計科目表）
+- [ ] journal_entries 工作表 + input_journal.py（事件→複式分錄自動翻譯）
+- [ ] account_balances 工作表 + rules_accounting.py（每月結帳+科目餘額+借貸平衡）
+- [ ] output_statements.py（損益表 / 資產負債表 / 現金流量表 + PDF 輸出）
+- [ ] LINE Bot 會計指令（「損益表」「資產負債表」「現金流」「應收明細」「逾期30天」）
+- [ ] input_vendor_email.py（Gmail 掃描廠商請款/報價/發票 → Claude Haiku 辨識 → 自動建分錄 → LINE 推播確認）
+- [ ] output_tax_report.py（台灣營業稅/營所稅格式，以後再做）
+
+### 系統 1（ArgiNex 業務）待辦
+- [ ] arginex-business repo 已建立（2026-03-31）
+- [ ] core_database.py + app.py 骨架
+- [ ] 8 個節點 worksheet 建立
 - [ ] 三 Bot 架構實作（老闆/客戶/廠商）
 - [ ] 金流串接（LINE Pay 或綠界）
+
+### 系統 1（ArgiNex）— 標籤自動化引擎（v5.5 新增）
+- [ ] Canva 設計三款酒標模板（日式經典/現代簡約/奢華禮盒）
+- [ ] Banana Pro 生成三張公版意象圖（3D 瓶身情境）
+- [ ] label_engine.py — Pillow 替換引擎（底圖 + 換 Logo + 換公司名）
+- [ ] Gemini API 串接 — 客製意象圖生成（平面標籤→3D 瓶身場景）
+- [ ] LINE Bot 標籤流程（客戶傳 Logo → 三款預覽 → 選定 → 平面+意象圖 → 確認 → 存 Drive）
+- [ ] 印刷輸出（PDF 刀模檔，送印刷廠）
 
 ### 系統 3（行銷）待辦
 - [ ] 開 FB/IG 商業帳號
@@ -517,7 +536,17 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 - [x] 排程修復（v5.1：改 python 單進程 + /ping + _scheduler_started）
 - [x] HSBC 角括號修復（input_gmail.py regex 預解析）
 - [x] UptimeRobot 監控（每 5 分鐘 ping）
+- [x] Gmail 重複記帳修復（v5.5：processed_ids 即時更新）
 - [ ] 多幣別記帳（日幣/美金）
+
+### 系統 5（TMO Leverage Model）待辦
+- 🔄 全部暫停，先做 ArgiNex（GitHub Actions 已 disabled）
+
+### 未來規劃 — 自動列印
+- [ ] 評估辦公室印表機型號（需支援 Wi-Fi + CUPS/API）
+- [ ] macOS lp 指令列印（出貨單/報價單 PDF → 直接印）
+- [ ] 標籤專用印表機評估（Brother QL / Zebra，量大後再買）
+- [ ] 自動寄 Email 給印刷廠（量產酒標）
 
 ### 其他
 - [ ] 收集 NTOU 產品文件
