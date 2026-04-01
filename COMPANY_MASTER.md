@@ -500,6 +500,7 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 - [ ] Canva Pro 整合（output_canva.py）
 - [ ] Raspberry Pi 硬體採購與設定
 - [ ] ⚠️ 評估是否升級 Render 付費版（57 Agent + 17 排程，Free Tier 有風險）
+- [ ] rules_audit.py 跨系統巡檢（finance_receivable/payable/orders/inventory/production_batch/compliance_licenses）
 
 ### 系統 2（IOT）— 複式簿記 + 會計自動化（v5.5 新增，~20hr）
 - [ ] chart_of_accounts 工作表 + input_chart.py（會計科目表）
