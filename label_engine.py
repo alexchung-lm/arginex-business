@@ -10,6 +10,7 @@ FONT_CANDIDATES = [
     "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc",  # Ubuntu noto-cjk
     "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",   # Ubuntu noto-cjk fallback
     "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",   # Ubuntu alt path
+    os.path.join(os.path.dirname(__file__), "fonts", "NotoSansTC.ttf"),  # 本地字體（Render 用）
 ]
 FONT_PATH = next((f for f in FONT_CANDIDATES if os.path.isfile(f)), FONT_CANDIDATES[-1])
 GOLD_COLOR = (169, 131, 58, 255)
