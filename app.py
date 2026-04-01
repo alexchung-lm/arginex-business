@@ -45,6 +45,36 @@ def reset_state(user_id: str):
 
 
 # ---------- Routes ----------
+
+@app.route("/debug")
+def debug():
+    import glob
+    font_paths = [
+        "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc",
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/opentype/noto/*.ttc",
+        "/usr/share/fonts/truetype/noto/*.ttc",
+    ]
+    results = []
+    for p in font_paths:
+        if "*" in p:
+            found = glob.glob(p)
+            results.append(f"glob({p}): {found[:5]}")
+        else:
+            results.append(f"{p}: {'EXISTS' if os.path.isfile(p) else 'NOT FOUND'}")
+    
+    # Also check all noto fonts
+    all_noto = glob.glob("/usr/share/fonts/**/Noto*", recursive=True)
+    results.append(f"All Noto fonts: {all_noto[:10]}")
+    
+    # Check label_engine FONT_PATH
+    from label_engine import FONT_PATH
+    results.append(f"label_engine FONT_PATH: {FONT_PATH}")
+    results.append(f"FONT_PATH exists: {os.path.isfile(FONT_PATH)}")
+    
+    return "\n".join(results), 200, {"Content-Type": "text/plain; charset=utf-8"}
+
 @app.route("/ping")
 def ping():
     return "pong"
