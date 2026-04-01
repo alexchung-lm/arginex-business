@@ -131,26 +131,43 @@ def handle_message(
             ])
             return
 
-        # 下載圖片
-        message_id = event.message.id
-        content = blob_api.get_message_content(message_id)
-        logo_path = os.path.join("uploads", f"{user_id}_logo.png")
-        with open(logo_path, "wb") as f:
-            f.write(content)
+        try:
+            # 下載圖片
+            message_id = event.message.id
+            print(f"[LOGO] 下載圖片 message_id={message_id}")
+            content = blob_api.get_message_content(message_id)
+            # SDK v3 可能回傳 bytes 或 response object
+            if hasattr(content, 'read'):
+                content = content.read()
+            elif hasattr(content, 'content'):
+                content = content.content
+            logo_path = os.path.join("uploads", f"{user_id}_logo.png")
+            with open(logo_path, "wb") as f:
+                f.write(content)
+            print(f"[LOGO] 圖片已存到 {logo_path}, 大小={os.path.getsize(logo_path)}")
 
-        # 生成酒標
-        company_name = state["company_name"]
-        output_path = generate_custom_label(company_name, logo_path)
-        filename = os.path.basename(output_path)
-        image_url = f"{BASE_URL}/images/{filename}"
+            # 生成酒標
+            company_name = state["company_name"]
+            print(f"[LOGO] 開始生成酒標: {company_name}")
+            output_path = generate_custom_label(company_name, logo_path)
+            print(f"[LOGO] 酒標生成完成: {output_path}")
+            filename = os.path.basename(output_path)
+            image_url = f"{BASE_URL}/images/{filename}"
+            print(f"[LOGO] 圖片 URL: {image_url}")
 
-        state["step"] = WAITING_CONFIRM
-        reply(messaging_api, event.reply_token, [
-            ImageMessage(original_content_url=image_url, preview_image_url=image_url),
-            TextMessage(
-                text=f"這是為 {company_name} 製作的專屬酒標，請確認是否滿意？\n回覆「確認」下單，「重做」重新設計"
-            ),
-        ])
+            state["step"] = WAITING_CONFIRM
+            reply(messaging_api, event.reply_token, [
+                ImageMessage(original_content_url=image_url, preview_image_url=image_url),
+                TextMessage(
+                    text=f"這是為 {company_name} 製作的專屬酒標，請確認是否滿意？\n回覆「確認」下單，「重做」重新設計"
+                ),
+            ])
+        except Exception as e:
+            print(f"[ERROR] 酒標生成失敗: {e}")
+            import traceback; traceback.print_exc()
+            reply(messaging_api, event.reply_token, [
+                TextMessage(text=f"抱歉，酒標生成時發生錯誤：{str(e)[:100]}\n請重新傳送 Logo 圖片試試"),
+            ])
 
     # --- WAITING_CONFIRM ---
     elif step == WAITING_CONFIRM:

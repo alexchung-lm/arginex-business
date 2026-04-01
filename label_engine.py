@@ -4,7 +4,14 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 
 TEMPLATE_PATH = "templates/label_A_merged.png"
-FONT_PATH = "/System/Library/AssetsV2/com_apple_MobileAsset_Font8/13b8ce423f920875b28b551f9406bf1014e0a656.asset/AssetData/Xingkai.ttc"
+# 多平台字體：macOS 用行楷，Render(Ubuntu) 用 Noto Serif CJK
+FONT_CANDIDATES = [
+    "/System/Library/AssetsV2/com_apple_MobileAsset_Font8/13b8ce423f920875b28b551f9406bf1014e0a656.asset/AssetData/Xingkai.ttc",  # macOS 行楷
+    "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc",  # Ubuntu noto-cjk
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",   # Ubuntu noto-cjk fallback
+    "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",   # Ubuntu alt path
+]
+FONT_PATH = next((f for f in FONT_CANDIDATES if os.path.isfile(f)), FONT_CANDIDATES[-1])
 GOLD_COLOR = (169, 131, 58, 255)
 
 
