@@ -15,6 +15,7 @@ from linebot.v3.webhooks import MessageEvent, TextMessageContent, ImageMessageCo
 from linebot.v3.webhook import WebhookParser
 import uuid
 from label_engine import generate_custom_label
+from gemini_showcase import generate_showcase
 
 # ---------- Config ----------
 CHANNEL_SECRET = os.environ["LINE_CHANNEL_SECRET"]
@@ -189,13 +190,34 @@ def handle_message(
             image_url = f"{BASE_URL}/images/{safe_name}"
             print(f"[LOGO] 圖片 URL: {image_url}")
 
-            state["step"] = WAITING_CONFIRM
-            reply(messaging_api, event.reply_token, [
+            # 嘗試生成 3D 瓶身示意圖（加分項，失敗不影響主流程）
+            messages_to_send = [
                 ImageMessage(original_content_url=image_url, preview_image_url=image_url),
+            ]
+            
+            try:
+                print(f"[SHOWCASE] 開始生成 3D 示意圖...")
+                showcase_path = generate_showcase(output_path)
+                if showcase_path:
+                    sc_name = os.path.basename(showcase_path)
+                    sc_url = f"{BASE_URL}/images/{sc_name}"
+                    messages_to_send.append(
+                        ImageMessage(original_content_url=sc_url, preview_image_url=sc_url)
+                    )
+                    print(f"[SHOWCASE] 示意圖生成成功: {sc_url}")
+                else:
+                    print("[SHOWCASE] 示意圖生成失敗，只回傳酒標")
+            except Exception as ex:
+                print(f"[SHOWCASE] 示意圖錯誤: {ex}")
+            
+            messages_to_send.append(
                 TextMessage(
                     text=f"這是為 {company_name} 製作的專屬酒標，請確認是否滿意？\n回覆「確認」下單，「重做」重新設計"
-                ),
-            ])
+                )
+            )
+            
+            state["step"] = WAITING_CONFIRM
+            reply(messaging_api, event.reply_token, messages_to_send)
         except Exception as e:
             print(f"[ERROR] 酒標生成失敗: {e}")
             import traceback; traceback.print_exc()
