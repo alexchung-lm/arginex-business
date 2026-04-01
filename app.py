@@ -13,6 +13,7 @@ from linebot.v3.messaging import (
 )
 from linebot.v3.webhooks import MessageEvent, TextMessageContent, ImageMessageContent
 from linebot.v3.webhook import WebhookParser
+import uuid
 from label_engine import generate_custom_label
 
 # ---------- Config ----------
@@ -180,8 +181,12 @@ def handle_message(
             print(f"[LOGO] 開始生成酒標: {company_name}")
             output_path = generate_custom_label(company_name, logo_path)
             print(f"[LOGO] 酒標生成完成: {output_path}")
-            filename = os.path.basename(output_path)
-            image_url = f"{BASE_URL}/images/{filename}"
+            # 用 UUID 檔名避免中文 URL 編碼問題
+            safe_name = f"{uuid.uuid4().hex[:8]}_label.png"
+            safe_path = os.path.join("output", safe_name)
+            import shutil
+            shutil.copy2(output_path, safe_path)
+            image_url = f"{BASE_URL}/images/{safe_name}"
             print(f"[LOGO] 圖片 URL: {image_url}")
 
             state["step"] = WAITING_CONFIRM
