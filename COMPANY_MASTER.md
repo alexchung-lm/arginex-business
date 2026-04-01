@@ -47,10 +47,10 @@ Alex = 中間整合者
 
 | 系統 | 名稱 | 對象 | Repo | 已建 | 目標 | 狀態 |
 |------|------|------|------|------|------|------|
-| S1 | ArgiNex 業務系統 | 農產品 CRM | arginex-business | 0 | 8+ | 🆕 新建 |
+| S1 | ArgiNex 業務系統 | 農產品 CRM + 標籤自動化 | arginex-business | 4 | 8+ | ✅ LINE Bot MVP 上線 |
 | S2 | IOT 農會加速器 + 公司會計 | 農會生產+公司財務 | iot-automation | 57 | 57 | ✅ 運行中 |
 | S3 | 網路行銷系統 | 品牌行銷+競品情報 | 尚未建 | 0 | 25 | 📋 規劃中 |
-| S4 | 秘書記帳系統 | 個人財務 | family-bot | 13 | 13 | ✅ 運行中 |
+| S4 | 秘書記帳系統 | 個人財務 | family-bot | 14 | 14 | ✅ 運行中 |
 | S5 | TMO Leverage Model | 生技儀器業務情報 | leverage-model-bot | 3 | 10+ | 🔄 暫停 |
 | | | | **合計** | **73** | **103+** | |
 
@@ -511,7 +511,7 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 - [ ] output_tax_report.py（台灣營業稅/營所稅格式，以後再做）
 
 ### 系統 1（ArgiNex 業務）待辦
-- [ ] arginex-business repo 已建立（2026-03-31）
+- [x] arginex-business repo 已建立 + Render 部署完成
 - [ ] core_database.py + app.py 骨架
 - [ ] 8 個節點 worksheet 建立
 - [ ] 三 Bot 架構實作（老闆/客戶/廠商）
@@ -521,7 +521,7 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 - [x] Gemini 生成酒標模板 + 意象圖（label_A.png, showcase_A.png）
 - [x] Banana Pro 生成公版意象圖（3D 瓶身情境）驗證成功
 - [x] label_engine.py — Pillow 替換引擎（合併模板 + 行楷字體 + Logo 置中）
-- [ ] Gemini API 串接 — 客製意象圖生成（平面標籤→3D 瓶身場景）
+- [x] Gemini API 串接 — gemini-2.5-flash-image 示意圖自動生成（gemini_showcase.py）
 - [x] LINE Bot 標籤流程 MVP（客戶傳公司名 → 傳 Logo → 自動生成酒標 → 回傳預覽 → 確認/重做）
 - [ ] 印刷輸出（PDF 刀模檔，送印刷廠）
 
@@ -537,6 +537,7 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 - [x] HSBC 角括號修復（input_gmail.py regex 預解析）
 - [x] UptimeRobot 監控（每 5 分鐘 ping）
 - [x] Gmail 重複記帳修復（v5.5：processed_ids 即時更新）
+- [x] rules_audit.py 資料品質巡檢（金額/欄位/日期/重複，每日 22:00 自動排程 + LINE 推播）
 - [ ] 多幣別記帳（日幣/美金）
 
 ### 系統 5（TMO Leverage Model）待辦
@@ -559,7 +560,7 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 ### 部署模式
 | 系統 | Render 方案 | 啟動方式 | Keep-alive |
 |------|------------|---------|------------|
-| S1 ArgiNex 業務 | 尚未部署 | — | — |
+| S1 ArgiNex 業務 | ✅ Free Tier（srv-d76dsdh4tr6s738pnlog） | python app.py | UptimeRobot /ping |
 | S5 TMO Leverage | Free Tier | — | UptimeRobot（需要時再加） |
 | S2 IOT | ⚠️ Free Tier | python app.py | UptimeRobot /ping（必須） |
 | S4 記帳 | ✅ 付費版 | python app.py | UptimeRobot /ping（選用，做監控） |
