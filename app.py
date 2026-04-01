@@ -162,15 +162,14 @@ def handle_message(
             return
 
         try:
-            # 下載圖片
+            # 下載圖片（直接用 HTTP，避免 SDK blob API 的相容性問題）
             message_id = event.message.id
             print(f"[LOGO] 下載圖片 message_id={message_id}")
-            content = blob_api.get_message_content(message_id)
-            # SDK v3 可能回傳 bytes 或 response object
-            if hasattr(content, 'read'):
-                content = content.read()
-            elif hasattr(content, 'content'):
-                content = content.content
+            import urllib.request
+            dl_url = f"https://api-data.line.me/v2/bot/message/{message_id}/content"
+            dl_req = urllib.request.Request(dl_url, headers={"Authorization": f"Bearer {CHANNEL_ACCESS_TOKEN}"})
+            dl_resp = urllib.request.urlopen(dl_req)
+            content = dl_resp.read()
             logo_path = os.path.join("uploads", f"{user_id}_logo.png")
             with open(logo_path, "wb") as f:
                 f.write(content)
