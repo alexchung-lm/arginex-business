@@ -31,10 +31,10 @@ def generate_showcase(label_path: str, output_dir: str = "output") -> str | None
         showcase_img = Image.open(SHOWCASE_TEMPLATE)
         label_img = Image.open(label_path)
 
-        print(f"[SHOWCASE] 呼叫 Gemini API（模型: gemini-2.0-flash）...")
+        print(f"[SHOWCASE] 呼叫 Gemini API（模型: gemini-2.5-flash-image）...")
 
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-flash-image",
             contents=[showcase_img, label_img, PROMPT],
             config=types.GenerateContentConfig(
                 response_modalities=["IMAGE", "TEXT"]
