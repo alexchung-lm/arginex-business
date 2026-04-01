@@ -1,7 +1,7 @@
 # ArgiNex 公司總架構 — COMPANY_MASTER
 建立日期：2026-03-26
 版本：v5.5（五系統分離版）
-最後更新：2026-03-31
+最後更新：2026-04-01
 用途：唯一主文件。每次開新 Desktop 對話，跟 Claude 說「去桌面讀 COMPANY_MASTER.md」即可開工。
 存放位置：/Users/zhongbinghuan/Desktop/COMPANY_MASTER.md + GitHub repo（四份同步）
 
@@ -518,11 +518,11 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 - [ ] 金流串接（LINE Pay 或綠界）
 
 ### 系統 1（ArgiNex）— 標籤自動化引擎（v5.5 新增）
-- [ ] Canva 設計三款酒標模板（日式經典/現代簡約/奢華禮盒）
-- [ ] Banana Pro 生成三張公版意象圖（3D 瓶身情境）
-- [ ] label_engine.py — Pillow 替換引擎（底圖 + 換 Logo + 換公司名）
+- [x] Gemini 生成酒標模板 + 意象圖（label_A.png, showcase_A.png）
+- [x] Banana Pro 生成公版意象圖（3D 瓶身情境）驗證成功
+- [x] label_engine.py — Pillow 替換引擎（合併模板 + 行楷字體 + Logo 置中）
 - [ ] Gemini API 串接 — 客製意象圖生成（平面標籤→3D 瓶身場景）
-- [ ] LINE Bot 標籤流程（客戶傳 Logo → 三款預覽 → 選定 → 平面+意象圖 → 確認 → 存 Drive）
+- [x] LINE Bot 標籤流程 MVP（客戶傳公司名 → 傳 Logo → 自動生成酒標 → 回傳預覽 → 確認/重做）
 - [ ] 印刷輸出（PDF 刀模檔，送印刷廠）
 
 ### 系統 3（行銷）待辦
