@@ -50,9 +50,9 @@ Alex = 中間整合者
 | S1 | ArgiNex 業務系統 | 農產品 CRM + 標籤自動化 | arginex-business | 4 | 8+ | ✅ LINE Bot MVP 上線 |
 | S2 | IOT 農會加速器 + 公司會計 | 農會生產+公司財務 | iot-automation | 57 | 57 | ✅ 運行中 |
 | S3 | 網路行銷系統 | 品牌行銷+競品情報 | 尚未建 | 0 | 25 | 📋 規劃中 |
-| S4 | 秘書記帳系統 | 個人財務 | family-bot | 14 | 14 | ✅ 運行中 |
+| S4 | 秘書記帳系統 | 個人財務 | family-bot | 15 | 15 | ✅ 運行中 |
 | S5 | TMO Leverage Model | 生技儀器業務情報 | leverage-model-bot | 3 | 10+ | 🔄 暫停 |
-| | | | **合計** | **73** | **103+** | |
+| | | | **合計** | **74** | **103+** | |
 
 **原則：** 每個系統獨立開發/運作/試算表。任一系統壞掉不影響其他三個。系統 3 是跨系統匯流點，只讀取不寫入。
 
@@ -288,7 +288,8 @@ F. 匯流儀表板（3）：input_dashboard_sync / rules_dashboard / output_dash
 | Google Cloud Project | iot-system-490808 |
 
 ### 功能
-- 文字記帳（「午餐 120」）/ 圖片辨識（發票/名片/帳單截圖）
+- 文字記帳（「午餐 120」）/ 圖片辨識（發票/名片/帳單截圖）/ 多幣別（TWD/JPY/USD）
+- 待辦事項（「待辦 買牛奶」→ 自動記錄 + 每日08:00提醒 + 「完成 1」勾選）
 - 行事曆 / 旅遊規劃 / 聯絡人 / Gmail 掃描 / 對帳
 - 排程：行事曆提醒每5分 / Gmail每15分 / 月報每月底21:00
 
@@ -573,8 +574,8 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 - [x] UptimeRobot 監控（每 5 分鐘 ping）
 - [x] Gmail 重複記帳修復（v5.5：processed_ids 即時更新）
 - [x] rules_audit.py 資料品質巡檢（金額/欄位/日期/重複，每日 22:00 自動排程 + LINE 推播）
-- [ ] 多幣別記帳（日幣/美金）
-- [ ] LINE 待辦事項功能（「待辦 買牛奶」→ 自動記錄 + 定時提醒 + 完成勾選）
+- [x] 多幣別記帳（TWD/JPY/USD，Claude Haiku 自動偵測幣別，摘要分組顯示）
+- [x] LINE 待辦事項功能（「待辦 買牛奶」→ input_todo.py 217行 → 每日08:00提醒 + 完成勾選）
 
 ### 系統 5（TMO Leverage Model）待辦
 - 🔄 全部暫停，先做 ArgiNex（GitHub Actions 已 disabled）
