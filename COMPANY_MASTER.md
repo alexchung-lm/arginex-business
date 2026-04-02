@@ -1,7 +1,7 @@
 # ArgiNex 公司總架構 — COMPANY_MASTER
 建立日期：2026-03-26
-版本：v5.5（五系統分離版）
-最後更新：2026-04-01
+版本：v5.6（五系統分離版 + Gemini 交叉驗證）
+最後更新：2026-04-02
 用途：唯一主文件。每次開新 Desktop 對話，跟 Claude 說「去桌面讀 COMPANY_MASTER.md」即可開工。
 存放位置：/Users/zhongbinghuan/Desktop/COMPANY_MASTER.md + GitHub repo（四份同步）
 
@@ -431,11 +431,45 @@ Chat 討論完架構 → 翻譯成精準技術指令
 # 大型任務 timeout 設 300 秒
 ```
 
+
+### 🔧 Gemini 交叉驗證（v5.6 新增，2026-04-02 上線）
+
+**原理：** 做帳的人和審帳的人不能是同一個人。Claude Code 寫完後，用 Gemini 做獨立 code review。
+
+```
+舊流程：Chat 翻譯 → Claude Code 寫 → Chat 驗收 → 上線
+新流程：Chat 翻譯 → Claude Code 寫 → Gemini 審查 → Chat 最終裁決 → 上線
+```
+
+**工具：** `~/Desktop/code_review.py`（144 行）
+```bash
+# 完整審查
+python3 ~/Desktop/code_review.py <file_path>
+
+# 帶規格檢查
+python3 ~/Desktop/code_review.py <file_path> --spec '需求描述'
+
+# 快速 PASS/FAIL
+python3 ~/Desktop/code_review.py <file_path> --quick
+```
+
+**審查項目：**
+- Logic Errors & Edge Cases
+- Security Vulnerabilities
+- Data Consistency（特別是 Google Sheet 操作）
+- Error Handling Gaps
+- Spec Compliance（如有提供規格）
+
+**審查結果：** 自動存到 `~/Desktop/reviews/<filename>_review_<timestamp>.txt`
+**API：** Gemini 2.5 Flash（快、便宜、夠用）
+**API Key：** 存在 `~/.zprofile`（GEMINI_API_KEY），同時也在 Render arginex-business 環境變數
+
 ### 標準工作流程
 ```
 步驟 1：Chat 討論架構和策略（只文字，⛔ 超過 20 行 code 就交 claude -p）
 步驟 2a（≤20行）：Chat 透過 mac-local MCP 直接寫檔案 / git push
 步驟 2b（>20行）：Chat 透過 claude -p 指揮 Code 寫整個模組
+步驟 2c（>20行後）：Chat 跑 code_review.py → Gemini 交叉驗證 → Chat 最終裁決
 步驟 3：Chat 透過 Chrome MCP + mac-local 驗收結果
 步驟 4：Chat 更新 COMPANY_MASTER.md → push 四個 repo
 ```
@@ -587,6 +621,27 @@ cd ~/目標repo && claude -p "精準技術指令" --allowedTools "Read,Write,Bas
 - 每次呼叫是獨立 session，不會記住之前的對話
 - 指令要足夠精準（Chat 的翻譯工作很重要）
 - 大型任務建議加 timeout：mac-local timeout 設 300 秒
+```
+
+### Gemini 交叉驗證技術細節
+```bash
+# 工具位置
+~/Desktop/code_review.py（144 行，Python CLI）
+
+# 依賴
+pip3 install google-genai  # 已安裝 v1.70.0
+
+# 環境變數
+GEMINI_API_KEY=AIzaSy...aXoU  # 存在 ~/.zprofile
+
+# 審查模型
+gemini-2.5-flash（成本低、速度快、審查品質足夠）
+
+# 審查報告存放
+~/Desktop/reviews/<filename>_review_<timestamp>.txt
+
+# Chat 自動化用法（mac-local 呼叫）
+GEMINI_API_KEY=$(grep GEMINI_API_KEY ~/.zprofile | cut -d'"' -f2) python3 ~/Desktop/code_review.py ~/repo/new_module.py --quick
 ```
 
 ### Render 排程注意事項
