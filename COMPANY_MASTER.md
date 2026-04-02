@@ -1,7 +1,7 @@
 # ArgiNex 公司總架構 — COMPANY_MASTER
 建立日期：2026-03-26
-版本：v5.7（三層規則分類版 🔴🟡🔵）
-最後更新：2026-04-02
+版本：v5.8（monorepo 合併版 🔴🟡🔵）
+最後更新：2026-04-02（v5.8 monorepo 合併完成）
 用途：唯一主文件。每次開新 Desktop 對話，跟 Claude 說「去桌面讀 COMPANY_MASTER.md」即可開工。
 存放位置：/Users/zhongbinghuan/Desktop/COMPANY_MASTER.md + GitHub repo（四份同步）
 
@@ -47,10 +47,10 @@ Alex = 中間整合者
 
 | 系統 | 名稱 | 對象 | Repo | 已建 | 目標 | 狀態 |
 |------|------|------|------|------|------|------|
-| S1 | ArgiNex 業務系統 | 農產品 CRM + 標籤自動化 | arginex-business | 4 | 8+ | ✅ LINE Bot MVP 上線 |
-| S2 | IOT 農會加速器 + 公司會計 | 農會生產+公司財務 | iot-automation | 57 | 57 | ✅ 運行中 |
+| S1 | ArgiNex 業務系統 | 農產品 CRM + 標籤自動化 | arginex-platform/s1_business | 4 | 8+ | ✅ LINE Bot MVP 上線 |
+| S2 | IOT 農會加速器 + 公司會計 | 農會生產+公司財務 | arginex-platform/s2_iot | 57 | 57 | ✅ 運行中 |
 | S3 | 網路行銷系統 | 品牌行銷+競品情報 | 尚未建 | 0 | 25 | 📋 規劃中 |
-| S4 | 秘書記帳系統 | 個人財務 | family-bot | 15 | 15 | ✅ 運行中 |
+| S4 | 秘書記帳系統 | 個人財務 | arginex-platform/s4_personal | 15 | 15 | ✅ 運行中 |
 | S5 | TMO Leverage Model | 生技儀器業務情報 | leverage-model-bot | 3 | 10+ | 🔄 暫停 |
 | | | | **合計** | **74** | **103+** | |
 
@@ -524,6 +524,27 @@ python3 ~/Desktop/code_review.py <file_path> --quick
 **API：** Gemini 2.5 Flash（快、便宜、夠用）
 **API Key：** 存在 `~/.zprofile`（GEMINI_API_KEY），同時也在 Render arginex-business 環境變數
 
+### 🔵 Monorepo 架構（v5.8 合併完成）
+```
+arginex-platform/           ← GitHub: alexchung-lm/arginex-platform
+├── app.py                  ← 統一入口（Flask Blueprint 路由分發 + APScheduler 排程集中）
+├── requirements.txt        ← 合併依賴
+├── Procfile                ← web: python app.py
+├── render.yaml             ← Render 部署設定
+├── s1_business/            ← S1 業務系統（Blueprint: /s1/*）
+├── s2_iot/                 ← S2 IOT + 公司會計（Blueprint: /s2/*）
+├── s3_marketing/           ← S3 行銷（預留）
+├── s4_personal/            ← S4 記帳（Blueprint: /s4/*）
+└── shared/                 ← 共用模組（預留）
+
+Render URL: https://arginex-platform.onrender.com
+LINE Webhook:
+  S1: /s1/callback
+  S2: /s2/webhook
+  S4: /s4/callback
+環境變數: S1_*, S2_*, S4_* 前綴分離 + ANTHROPIC_API_KEY/GEMINI_API_KEY 共用
+```
+
 ### 🔵 標準工作流程
 ```
 步驟 1：Chat 討論架構和策略（只文字，⛔ 超過 20 行 code 就交 claude -p）
@@ -656,10 +677,11 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 ### 🔵 部署模式
 | 系統 | Render 方案 | 啟動方式 | Keep-alive |
 |------|------------|---------|------------|
-| S1 ArgiNex 業務 | ✅ Free Tier（srv-d76dsdh4tr6s738pnlog） | python app.py | UptimeRobot /ping |
-| S5 TMO Leverage | Free Tier | — | UptimeRobot（需要時再加） |
-| S2 IOT | ⚠️ Free Tier | python app.py | UptimeRobot /ping（必須） |
-| S4 記帳 | ✅ 付費版 | python app.py | UptimeRobot /ping（選用，做監控） |
+| 🆕 arginex-platform | ✅ 付費版 Starter $7/月（srv-d76v02qa214c73d65ae0） | python app.py | UptimeRobot /ping |
+| S5 TMO Leverage | Free Tier（暫停中） | — | — |
+| ~~S1 arginex-business~~ | 已 suspend | — | — |
+| ~~S2 iot-automation~~ | 已 suspend | — | — |
+| ~~S4 family-bot~~ | 待 suspend（觀察中） | — | — |
 
 - GitHub push → Render 自動部署
 - 系統驗證：`python3 system_check.py` + regex scan + py_compile
