@@ -500,7 +500,7 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 - [ ] Canva Pro 整合（output_canva.py）
 - [ ] Raspberry Pi 硬體採購與設定
 - [ ] ⚠️ 評估是否升級 Render 付費版（57 Agent + 17 排程，Free Tier 有風險）
-- [ ] rules_audit.py 跨系統巡檢（finance_receivable/payable/orders/inventory/production_batch/compliance_licenses）
+- [x] rules_audit.py 跨系統巡檢（9張工作表：財務/訂單/庫存/生產/合規，每日22:30排程+LINE推播）
 
 ### 系統 2（IOT）— 複式簿記 + 會計自動化（v5.5 新增，~20hr）
 - [ ] chart_of_accounts 工作表 + input_chart.py（會計科目表）
@@ -540,6 +540,7 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 - [x] Gmail 重複記帳修復（v5.5：processed_ids 即時更新）
 - [x] rules_audit.py 資料品質巡檢（金額/欄位/日期/重複，每日 22:00 自動排程 + LINE 推播）
 - [ ] 多幣別記帳（日幣/美金）
+- [ ] LINE 待辦事項功能（「待辦 買牛奶」→ 自動記錄 + 定時提醒 + 完成勾選）
 
 ### 系統 5（TMO Leverage Model）待辦
 - 🔄 全部暫停，先做 ArgiNex（GitHub Actions 已 disabled）
