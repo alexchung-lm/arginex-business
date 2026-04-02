@@ -1,6 +1,6 @@
 # ArgiNex 公司總架構 — COMPANY_MASTER
 建立日期：2026-03-26
-版本：v5.6（五系統分離版 + Gemini 交叉驗證）
+版本：v5.7（三層規則分類版 🔴🟡🔵）
 最後更新：2026-04-02
 用途：唯一主文件。每次開新 Desktop 對話，跟 Claude 說「去桌面讀 COMPANY_MASTER.md」即可開工。
 存放位置：/Users/zhongbinghuan/Desktop/COMPANY_MASTER.md + GitHub repo（四份同步）
@@ -134,15 +134,35 @@ Alex = 中間整合者
 協調型 Agent（core_*）    → 串聯所有 Agent（資料庫/排程/路由）
 ```
 
-### 核心原則
-- **Google Sheet 是神經系統**：所有 Agent 不直接互相呼叫，只透過 Sheet 交換數據
-- **system_events 是圖譜的邊**：跨 Agent 串聯透過事件驅動
-- **欄位契約**：欄位只能新增，不能改名或刪除
-- **三層完全獨立**：收集層只寫入 / 決策層只判斷 / 輸出層只執行
-- **時區統一**：ISO 格式含時區 `2026-03-26T14:30:00+08:00`
-- **API 限制**：Google Sheet 每分鐘 60 次讀寫，排程錯開
-- **MVP 優先**：能用就開始用，邊用邊改
-- **Rewrite > Patch**：模組有邏輯問題時整個重寫，不要疊補丁
+### 規則三層分類（v5.7 定案）
+```
+🔴 紅色規則 → 違反 = 系統壞掉 / 流程中斷 / 資料錯誤。零例外。
+🟡 黃色準則 → 違反不會立刻壞，但會累積技術債或降低效率。
+🔵 藍色參考 → 工具用法、技術細節、歷史記錄。不遵守不會壞。
+```
+
+### 🔴 紅色規則（架構類 R1~R4）
+
+**🔴 R1 — Google Sheet 是神經系統**
+所有 Agent 不直接互相呼叫，只透過 Sheet 交換數據。違反 → Agent 耦合，一改全壞。
+
+**🔴 R2 — 系統獨立原則**
+每個系統獨立開發 / 運作 / 試算表。任一系統壞掉不影響其他。違反 → 一個 bug 拖垮全部。
+
+**🔴 R3 — 欄位契約**
+欄位只能新增，不能改名或刪除。違反 → 所有依賴該欄位的 Agent 壞掉。
+
+**🔴 R4 — Rewrite > Patch**
+模組有邏輯問題時整個重寫，不疊補丁。模組夠小（100~300 行），claude -p 重寫 30 秒 + Gemini 驗證 → 比補丁更快更乾淨。
+
+### 🟡 黃色準則（架構類 Y1~Y6）
+
+**🟡 Y1 — 三層完全獨立：** 收集層只寫入 / 決策層只判斷 / 輸出層只執行
+**🟡 Y2 — system_events 是圖譜的邊：** 跨 Agent 串聯透過事件驅動
+**🟡 Y3 — 時區統一：** ISO 格式含時區 `2026-03-26T14:30:00+08:00`
+**🟡 Y4 — API 限制：** Google Sheet 每分鐘 60 次讀寫，排程錯開
+**🟡 Y5 — MVP 優先：** 能用就開始用，邊用邊改
+**🟡 Y6 — 單進程啟動：** `python app.py`，禁止 gunicorn（多 worker 會複製排程 → 重複執行）
 
 ---
 
@@ -246,7 +266,7 @@ license_expiring / food_safety_fail / email_order_received
 
 ## ㊆ 系統 3 — 網路行銷系統（品牌放大+情報）
 
-**跨系統匯流點：從 Sheet A/B/D 讀取數據，不寫入其他系統。**
+**🟡 跨系統匯流點：從 Sheet A/B/D 讀取數據，不寫入其他系統。**
 
 ### 25 個 Agent（6 模組群）
 ```
@@ -340,79 +360,118 @@ F. 匯流儀表板（3）：input_dashboard_sync / rules_dashboard / output_dash
 
 ## ㊈ 工作流程 SOP
 
-### 🔴 20 行規則 — Chat 每次動手前的唯一判斷標準
+### 🔴 紅色規則（工作流程類 R5~R10）
+
+**架構類紅色規則 R1~R4 見 ㊃ 區段。以下為工作流程類。**
+
+---
+
+### 🔴 R5 — 身體分工：Chat = 大腦 / MCP = 手 / Chrome = 眼
+
+**這是整個架構的根本比喻，搞混就全亂。**
+
+```
+Chat   = 🧠 大腦（思考、翻譯、決策、驗收）
+MCP    = ✋ 手（mac-local 讀寫檔案 / claude -p 寫程式）
+Chrome = 👁 眼睛（看網頁、測 API、視覺驗收）
+```
+
+- 大腦不做手的事 → Chat 不直接寫 >20 行 code
+- 手不做大腦的事 → claude -p 不做架構決策
+- 眼睛只負責看 → Chrome MCP 不寫檔案、不做邏輯判斷
+- 所有動作都從大腦發起 → Chat 發號施令，MCP 和 Chrome 執行
+
+```
+┌──────────────────────────────────────────────────┐
+│  Chat（🧠 大腦 + 翻譯官）                          │
+│  ・把 Alex 的商業語言翻譯成精準技術指令               │
+│  ・戰略討論、架構決策、驗收結果                       │
+│  ・⛔ 超過 20 行 code → 交給 claude -p              │
+│  ・所有對談都先經過 Chat，由 Chat 發號施令             │
+│                                                    │
+│  Chat 的兩隻手（✋）：                               │
+│  ├── mac-local MCP → ≤20 行的小事直接做              │
+│  └── claude -p → >20 行的大事交給 Code 寫            │
+│                                                    │
+│  Chat 的眼睛（👁）：                                 │
+│  ├── Chrome MCP → 看網頁、測 API（自動，省 token）    │
+│  └── Alex 丟截圖 → Chat 帶脈絡判斷（手動補位）       │
+└──────────────────────────────────────────────────┘
+```
+
+---
+
+### 🔴 R6 — Chat = 翻譯官（不能改的根本前提）
+
+**Alex 是商業架構師，不是工程師。**
+
+Chat 的核心價值 = 把商業語言翻譯成精準的技術指令，再交給 Claude Code 執行。
+沒有 Chat 翻譯 → Claude Code 只能猜 → 產出不符合 COMPANY_MASTER 的架構。
+
+**2026-03-31 實測結論：** Dispatch、Computer Use、遠端桌面、手機遙控全部測過，沒有任何方案比 Chat + MCP + claude -p 更好。
+
+---
+
+### 🔴 R7 — 20 行規則：Chat 每次動手前的唯一判斷標準
 
 **我（Chat）即將生成的 code 超過 20 行嗎？**
 
 ```
-YES → 交給 claude -p（Code 來寫，Chat 只翻譯指令，上下文不爆）
-NO  → mac-local MCP 直接做（Chat 自己處理，快速完成）
+YES → 交給 claude -p（上下文不爆）
+NO  → mac-local MCP 直接做（快速完成）
 ```
 
-| 動作 | Chat 生成多少 code？ | 誰做？ |
-|------|---------------------|--------|
-| 讀任何檔案 | 0 行 | ✅ Chat + mac-local |
-| git push / shell 指令 | 0 行 | ✅ Chat + mac-local |
-| 看網頁驗收 | 0 行 | ✅ Chat + Chrome MCP |
-| 改 config 一兩行 | 2-3 行 | ✅ Chat + mac-local |
-| 修 bug（改幾行） | 5-15 行 | ✅ Chat + mac-local |
-| 加一個小 function | 10-20 行 | ✅ Chat + mac-local（剛好在線上） |
-| **新建一個 Agent 檔案** | **50-300 行** | ⛔ **claude -p** |
-| **重寫 app.py 的一大段** | **100+ 行** | ⛔ **claude -p** |
-| **建 core_database.py** | **200+ 行** | ⛔ **claude -p** |
+| 動作 | code 行數 | 誰做？ |
+|------|----------|--------|
+| 讀檔 / git push / 看網頁 | 0 行 | ✅ Chat + MCP |
+| 改 config / 修 bug | 2-15 行 | ✅ Chat + mac-local |
+| **新建 Agent / 重寫模組** | **50-300 行** | ⛔ **claude -p** |
 
-**為什麼這是最重要的規則？**
-Chat 用 mac-local 寫一個 200 行檔案 → 這 200 行出現在對話裡 → 上下文爆滿 → 策略討論被擠出去。
-Chat 用 claude -p 寫同一個檔案 → Chat 只產出 10 行指令 → Code 在自己的 context 生成 200 行 → 上下文完好。
 **同樣的結果，差 190 行的上下文消耗。**
 
-### 🔴 Anti-Continue 規則 — Chat 回覆必須精簡
+---
 
-**Chat 的回覆觸發 Continue 按鈕 = 流程中斷 = Alex 被迫手動介入。**
+### 🔴 R8 — Anti-Continue：Chat 回覆必須精簡
 
-防止 Continue 的三條規則：
-1. **超過 20 行 code → claude -p**（已解決，見上方 20 行規則）
-2. **多步驟操作 → 壓縮成單一 shell 指令**（一次 MCP 呼叫完成，不要拆成多次）
-3. **回覆先結論後展開**（Alex 沒問就不展開長篇解釋，省上下文也避免 Continue）
+**Chat 觸發 Continue 按鈕 = 流程中斷 = Alex 手動介入。**
 
-```
-❌ 錯誤：push 四個 repo 分三次呼叫 + 三段解釋 → 觸發 Continue
-✅ 正確：for repo in a b c; do git push; done → 一次搞定 → 不觸發
-```
+1. 超過 20 行 code → claude -p（見 R7）
+2. 多步驟操作 → 壓縮成單一 shell 指令
+3. 回覆先結論後展開（Alex 沒問就不展開）
 
-### 🔴 Chat = 翻譯官（不能改的根本前提）
+---
 
-**Alex 是商業架構師，不是工程師。**
+### 🔴 R9 — Gemini 必審：claude -p 寫完必跑 Gemini 審查
 
-Alex 的語言是「我需要管三種客戶」，不是「建 customers 工作表用 gspread，append_row 收兩個參數」。
-Chat 的核心價值 = 把商業語言翻譯成精準的技術指令，再交給 Claude Code 執行。
-沒有 Chat 翻譯 → Claude Code 只能猜 → 產出不符合 COMPANY_MASTER 的架構。
-Cowork / Dispatch / Computer Use 預設使用者能下精準技術指令 → 不適用 Alex 的工作模式。
-
-**2026-03-31 實測結論：** 花了一整天測試 Dispatch、Computer Use、遠端桌面、手機遙控，
-結論是沒有任何方案比 Chat + MCP + claude -p 更好。
-
-### ⭐ 架構全貌（v5.4 定案）
+**claude -p 產出的任何檔案，上線前必須經過 Gemini 交叉驗證。沒有例外。**
 
 ```
-┌─────────────────────────────────────────────────┐
-│  Chat（大腦 + 翻譯官）                             │
-│  ・把 Alex 的商業語言翻譯成精準技術指令              │
-│  ・戰略討論、架構決策、驗收結果                      │
-│  ・⛔ 超過 20 行 code → 交給 claude -p             │
-│  ・所有對談都先經過 Chat，由 Chat 發號施令            │
-│                                                   │
-│  Chat 的兩隻手：                                   │
-│  ├── mac-local MCP → ≤20 行的小事直接做             │
-│  └── claude -p → >20 行的大事交給 Code 寫           │
-│                                                   │
-│  Chat 的眼睛：                                     │
-│  ├── Chrome MCP → 看網頁、測 API（自動，省 token）   │
-│  └── Alex 丟截圖 → Chat 帶脈絡判斷（手動補位）      │
-└─────────────────────────────────────────────────┘
+claude -p 寫完 → Chat 跑 code_review.py → Gemini 報告 → Chat 最終裁決
+                 ⛔ 跳過 = 違反 SOP
 ```
 
-### 🔧 claude -p 橋（v5.3 發現，2026-03-31 測試成功）
+```bash
+GEMINI_API_KEY=$(grep GEMINI_API_KEY ~/.zprofile | cut -d'"' -f2) python3 ~/Desktop/code_review.py <檔案路徑> --quick
+```
+
+做帳的人和審帳的人不能是同一個人。
+
+---
+
+### 🔴 R10 — 防斷線：claude -p 必須 nohup 背景執行
+
+**根因：mac_mcp_server.py 單線程，claude -p 同步跑太久 → 阻塞 MCP → 斷線。**
+
+```bash
+# ✅ 正確（不會斷線）：
+nohup claude -p "指令" --allowedTools "Read,Write,Bash" > /tmp/claude_task.log 2>&1 &
+# 之後用 tail -20 /tmp/claude_task.log 查看進度
+
+# ❌ 錯誤（會斷線）：
+# claude -p "指令"  ← 同步等待 → 阻塞 → 斷線
+```
+
+### 🔵 claude -p 橋（技術參考）
 
 Chat 透過 mac-local MCP 呼叫 `claude -p` 直接指揮 Claude Code 寫程式。
 Alex 不需要手動切 tab 複製貼上。
@@ -433,7 +492,7 @@ Chat 討論完架構 → 翻譯成精準技術指令
 ```
 
 
-### 🔧 Gemini 交叉驗證（v5.6 新增，2026-04-02 上線）
+### 🔵 Gemini 交叉驗證工具（技術參考）
 
 **原理：** 做帳的人和審帳的人不能是同一個人。Claude Code 寫完後，用 Gemini 做獨立 code review。
 
@@ -465,7 +524,7 @@ python3 ~/Desktop/code_review.py <file_path> --quick
 **API：** Gemini 2.5 Flash（快、便宜、夠用）
 **API Key：** 存在 `~/.zprofile`（GEMINI_API_KEY），同時也在 Render arginex-business 環境變數
 
-### 標準工作流程
+### 🔵 標準工作流程
 ```
 步驟 1：Chat 討論架構和策略（只文字，⛔ 超過 20 行 code 就交 claude -p）
 步驟 2a（≤20行）：Chat 透過 mac-local MCP 直接寫檔案 / git push
@@ -475,14 +534,14 @@ python3 ~/Desktop/code_review.py <file_path> --quick
 步驟 4：Chat 更新 COMPANY_MASTER.md → push 四個 repo
 ```
 
-### 每次開新對話的 SOP
+### 🔵 每次開新對話的 SOP
 ```
 你：「去桌面讀 COMPANY_MASTER.md，我們繼續」
 Claude：透過 MCP 讀取 → 掌握全局 → 開工
 做完：Claude 透過 MCP 更新 COMPANY_MASTER.md → push 四個 repo
 ```
 
-### 出門在外的正確做法
+### 🔵 出門在外的正確做法
 ```
 桌前（出門前）：跟 Chat 討論策略、確認 MD 內容
 出門中：手機開 Chat 對話 → 繼續討論 MD 修訂（純文字，不需要 MCP）
@@ -491,7 +550,7 @@ Claude：透過 MCP 讀取 → 掌握全局 → 開工
 
 **思考不需要工具，執行才需要。**
 
-### MCP 連線確認（桌前 Checklist）
+### 🔵 MCP 連線確認 Checklist
 ```
 □ Claude Desktop app 開著
 □ Chrome 開著 + Claude in Chrome 擴充功能藍色開關
@@ -503,7 +562,7 @@ Claude：透過 MCP 讀取 → 掌握全局 → 開工
 Server：`~/.mcp/mac_mcp_server.py`
 Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 
-### ⛔ 已測試並排除的替代方案（2026-03-31）
+### 🔵 已測試並排除的替代方案（2026-03-31）
 | 方案 | 為什麼不用 |
 |------|-----------|
 | Dispatch | 大腦和手混在同一 thread → 上下文秒爆 |
@@ -513,7 +572,7 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 | Chat → Cowork MCP | Cowork 沒有 CLI 或 API，無法程式化呼叫 |
 | `claude -p --chrome` | Code 自己驗收 = 沒有商業脈絡的 QC，不如 Chat 驗收 |
 
-### 雙眼策略
+### 🔵 雙眼策略
 | 工具 | 場景 | 優點 | 缺點 |
 |------|------|------|------|
 | Claude in Chrome | 看網頁、測 API | 快、省 token | 只看瀏覽器、會斷線 |
@@ -594,7 +653,7 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 
 ## ㊊ 技術備忘
 
-### 部署模式
+### 🔵 部署模式
 | 系統 | Render 方案 | 啟動方式 | Keep-alive |
 |------|------------|---------|------------|
 | S1 ArgiNex 業務 | ✅ Free Tier（srv-d76dsdh4tr6s738pnlog） | python app.py | UptimeRobot /ping |
@@ -605,7 +664,7 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 - GitHub push → Render 自動部署
 - 系統驗證：`python3 system_check.py` + regex scan + py_compile
 
-### claude -p 橋技術細節
+### 🔵 claude -p 橋技術細節
 ```bash
 # 基本用法：Chat 透過 mac-local 呼叫
 cd ~/目標repo && claude -p "精準技術指令" --allowedTools "Read,Write,Bash"
@@ -621,10 +680,11 @@ cd ~/目標repo && claude -p "精準技術指令" --allowedTools "Read,Write,Bas
 # 注意
 - 每次呼叫是獨立 session，不會記住之前的對話
 - 指令要足夠精準（Chat 的翻譯工作很重要）
-- 大型任務建議加 timeout：mac-local timeout 設 300 秒
+
+# 防斷線：見 🔴 R10 規則（必須 nohup 背景執行）
 ```
 
-### Gemini 交叉驗證技術細節
+### 🔵 Gemini 交叉驗證技術細節
 ```bash
 # 工具位置
 ~/Desktop/code_review.py（144 行，Python CLI）
@@ -645,21 +705,21 @@ gemini-2.5-flash（成本低、速度快、審查品質足夠）
 GEMINI_API_KEY=$(grep GEMINI_API_KEY ~/.zprofile | cut -d'"' -f2) python3 ~/Desktop/code_review.py ~/repo/new_module.py --quick
 ```
 
-### Render 排程注意事項
+### 🟡 Render 排程注意事項
 - Free Tier 15 分鐘無外部 HTTP 請求就休眠，排程全部停止
 - APScheduler 是 app 進程的一部分，app 休眠 = 排程死
 - UptimeRobot 每 5 分鐘 ping /ping → 維持不休眠
 - 付費版不會休眠，排程穩定
 - 啟動方式必須用 `python app.py`（單進程），不用 gunicorn（多 worker 會排程重複）
 
-### 關鍵 API 模式
+### 🔵 關鍵 API 模式
 - `core_database.py`：`append_row(sheet_name, data_dict)` 只收 2 參數
 - `get_worksheet(sheet_name).get_all_records()` 讀取數據
 - `send_line_push(user_id, message)` 推播通知
 - Google Sheet 建工作表：每個 `add_worksheet` 之間 `time.sleep(2)`
 - 大檔案傳輸：寫 Python 生成腳本 → mac-local:write_file → run_command
 
-### Git 操作
+### 🔵 Git 操作
 - 正常 push：`git add . && git commit -m "msg" && git push origin main`
 - 衝突解決：`git pull --rebase origin main && git push origin main`
 
@@ -667,7 +727,7 @@ GEMINI_API_KEY=$(grep GEMINI_API_KEY ~/.zprofile | cut -d'"' -f2) python3 ~/Desk
 - 桌面需 QR modal（Google Charts API）
 - 手機直接開 LINE app
 
-### 歷史錯誤教訓（29 條）
+### 🔵 歷史錯誤教訓（29 條）
 架構類：公司帳歸錯系統 / IOT 定位錯誤 / 農會風險誤判 / 盤商節點太窄
 爬蟲類：政府採購反爬 / g0v 網域變更 / JSON 當 HTML 解 / data.gov.tw 無即時 API
 部署類：Render Port / LINE Token I/l / ADMIN_LINE_USER_ID / API Key 額度 / Model 名稱
@@ -675,18 +735,22 @@ GEMINI_API_KEY=$(grep GEMINI_API_KEY ~/.zprofile | cut -d'"' -f2) python3 ~/Desk
 流程類：Chrome 燒 token / Chrome 斷線 / 上下文爆滿
 **v5.1：** gunicorn 多 worker 殺排程 → 改 python app.py 單進程
 **v5.2：** Dispatch/Computer Use/遠端桌面 全部不適用本架構
+**v5.6 新增（2026-04-02）：**
+- claude -p 同步執行阻塞 MCP server → 改 nohup 背景執行（根因：mac_mcp_server.py 單線程）
+- Gemini 交叉驗證寫了但沒執行 → 升級為紅色規則強制執行
+
 **v5.3 新增（2026-03-31）：**
 - 以為 Chat 無法連線 Claude Code → 實測 `claude -p` 完全可行（差點錯過最重要的橋）
 - Cowork 沒有 CLI → Chat 無法程式化呼叫 Cowork（這是真的做不到）
 - `--chrome` 讓 Code 自己驗收 → 不如 Chat 驗收（Code 沒有商業脈絡）
 
-### MCP 連線注意事項
+### 🟡 MCP 連線注意事項
 - mac-local：由 Claude Desktop app 管理，app 開著就不會斷
 - Claude in Chrome：Chrome 擴充功能，Chrome 閒置太久會斷線
 - MCP 綁 Claude Desktop app → 手機端無法使用 MCP
 - 斷線恢復：回桌面重新整理 Claude Desktop 的對話頁面
 
-### 資料庫升級路線
+### 🟡 資料庫升級路線
 ```
 現在：Google Sheet（4 張獨立試算表）
 第二階段：Supabase（資料量超過 500 筆時）
@@ -695,4 +759,5 @@ GEMINI_API_KEY=$(grep GEMINI_API_KEY ~/.zprofile | cut -d'"' -f2) python3 ~/Desk
 
 ---
 
-**5 系統 ・ 5 試算表 ・ 21+ 節點 ・ 73 已建 Agent ・ 103+ 目標 ・ 4 Repo 同步**
+**5 系統 ・ 5 試算表 ・ 21+ 節點 ・ 74 已建 Agent ・ 103+ 目標 ・ 4 Repo 同步**
+**🔴 10 條紅色規則 ・ 🟡 9 條黃色準則 ・ 🔵 藍色技術參考**
