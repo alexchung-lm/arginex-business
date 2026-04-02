@@ -52,7 +52,7 @@ Alex = 中間整合者
 | S3 | 網路行銷系統 | 品牌行銷+競品情報 | 尚未建 | 0 | 25 | 📋 規劃中 |
 | S4 | 秘書記帳系統 | 個人財務 | arginex-platform/s4_personal | 15 | 15 | ✅ 運行中 |
 | S5 | TMO Leverage Model | 生技儀器業務情報 | leverage-model-bot | 3 | 10+ | 🔄 暫停 |
-| | | | **合計** | **74** | **103+** | |
+| | | | **合計** | **74** | **103+** | 🆕 monorepo 合併完成 |
 
 **原則：** 每個系統獨立開發/運作/試算表。任一系統壞掉不影響其他三個。系統 3 是跨系統匯流點，只讀取不寫入。
 
@@ -172,9 +172,9 @@ Alex = 中間整合者
 | 項目 | 內容 |
 |------|------|
 | LINE Bot | LM情報助理 @997qsojr |
-| Render URL | https://leverage-model-bot.onrender.com |
-| Render 方案 | Free Tier（目前幾乎空的，不需要 always-on） |
-| GitHub | alexchung-lm/arginex-business（main） |
+| Render URL | https://arginex-platform.onrender.com/s1 |
+| Render 方案 | ✅ 付費版 Starter $7/月（monorepo 共用） |
+| GitHub | alexchung-lm/arginex-platform → s1_business/ |
 | Service Account | leverage-model-bot@leverage-model.iam.gserviceaccount.com |
 | Google Sheet ID | 1nN4Wol_tLA--bZdBt0xnKq-lgW7HbKumcmGU8EmKGic |
 
@@ -217,13 +217,13 @@ Alex = 中間整合者
 ### 部署資訊
 | 項目 | 內容 |
 |------|------|
-| Render URL | https://iot-automation-s47u.onrender.com |
-| Render 方案 | ⚠️ Free Tier（靠 UptimeRobot 維持不休眠，考慮升級付費） |
+| Render URL | https://arginex-platform.onrender.com/s2 |
+| Render 方案 | ✅ 付費版 Starter $7/月（monorepo 共用，不再休眠） |
 | 儀表板 | /dashboard |
 | 溯源頁 | /trace/B-XXX |
 | 品牌官網 | / （五區塊：Hero/Technology/ESG/Product/CTA） |
-| GitHub | alexchung-lm/iot-automation |
-| LINE Bot | IoT系統 @731qpzdr |
+| GitHub | alexchung-lm/arginex-platform → s2_iot/ |
+| LINE Bot | IoT系統 @731qpzdr（webhook: /s2/webhook） |
 | UptimeRobot | 每 5 分鐘 ping /ping（⚠️ 關鍵：Free Tier 必須保留） |
 | 統計 | 57 Agent ・ 45 工作表 ・ 17 排程 ・ 25+ Line Bot 指令 |
 
@@ -301,9 +301,9 @@ F. 匯流儀表板（3）：input_dashboard_sync / rules_dashboard / output_dash
 ### 部署資訊
 | 項目 | 內容 |
 |------|------|
-| GitHub | alexchung-lm/family-bot（Private） |
-| Render URL | https://family-bot-r7sg.onrender.com |
-| Render 方案 | ✅ 付費版（不會休眠） |
+| GitHub | alexchung-lm/arginex-platform → s4_personal/ |
+| Render URL | https://arginex-platform.onrender.com/s4 |
+| Render 方案 | ✅ 付費版 Starter $7/月（monorepo 共用） |
 | UptimeRobot | 每 5 分鐘 ping /ping（付費版不需 keep-alive，但保留做 uptime 監控） |
 | Google Cloud Project | iot-system-490808 |
 
@@ -614,7 +614,7 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 - [ ] QR Code 溯源系統
 - [ ] Canva Pro 整合（output_canva.py）
 - [ ] Raspberry Pi 硬體採購與設定
-- [ ] ⚠️ 評估是否升級 Render 付費版（57 Agent + 17 排程，Free Tier 有風險）
+- [x] ✅ 已升級 Render 付費版（v5.8 monorepo 合併到 arginex-platform Starter $7/月）
 - [x] rules_audit.py 跨系統巡檢（9張工作表：財務/訂單/庫存/生產/合規，每日22:30排程+LINE推播）
 
 ### 系統 2（IOT）— 複式簿記 + 會計自動化（v5.5 新增，~20hr）
@@ -627,7 +627,7 @@ Claude Code CLI：`/opt/homebrew/bin/claude`（v2.1.81）
 - [ ] output_tax_report.py（台灣營業稅/營所稅格式，以後再做）
 
 ### 系統 1（ArgiNex 業務）待辦
-- [x] arginex-business repo 已建立 + Render 部署完成
+- [x] arginex-platform monorepo 已建立 + Render Starter 部署完成（v5.8）
 - [ ] core_database.py + app.py 骨架
 - [ ] 8 個節點 worksheet 建立
 - [ ] 三 Bot 架構實作（老闆/客戶/廠商）
@@ -760,6 +760,13 @@ GEMINI_API_KEY=$(grep GEMINI_API_KEY ~/.zprofile | cut -d'"' -f2) python3 ~/Desk
 **v5.6 新增（2026-04-02）：**
 - claude -p 同步執行阻塞 MCP server → 改 nohup 背景執行（根因：mac_mcp_server.py 單線程）
 - Gemini 交叉驗證寫了但沒執行 → 升級為紅色規則強制執行
+
+**v5.8 新增（2026-04-02）：**
+- S1+S2+S4 合併到 arginex-platform monorepo → 一台 Render 付費版取代 3 台（2 Free + 1 付費）
+- Render API 建服務時 runtime 欄位在 `envSpecificDetails.runtime` 不是頂層 → 用 `env: python` 在 `serviceDetails` 層
+- 環境變數 PUT 會覆蓋全部 → 每次更新要先 GET 再合併再 PUT
+- Blueprint url_prefix 在構造函式和 register_blueprint 都設了 → register_blueprint 的會覆蓋
+- requirements.txt 合併時 python-miio 編譯失敗 → 先移除，硬體連接時再加回
 
 **v5.3 新增（2026-03-31）：**
 - 以為 Chat 無法連線 Claude Code → 實測 `claude -p` 完全可行（差點錯過最重要的橋）
